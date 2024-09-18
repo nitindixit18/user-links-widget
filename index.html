@@ -36,12 +36,17 @@
         a:hover {
             text-decoration: underline;
         }
+        #errorDetails {
+            color: #ff0000;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Your Personalized Links</h1>
         <ul id="linksList"></ul>
+        <div id="errorDetails"></div>
     </div>
 
     <script>
@@ -53,29 +58,41 @@
                 return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
             };
 
-            var userName = getUrlParameter('userName');
+            var userName = getUrlParameter('username'); // Changed to lowercase 'username'
 
-            var sheetId = '1hCvScUNA_T0_WfaQkaxfBNIDVG4xcRYvb1d-DuyqUSg/';
+            var sheetId = '1hCvScUNA_T0_WfaQkaxfBNIDVG4xcRYvb1d-DuyqUSg';
             var sheetName = 'Sheet1'; // Change this if your sheet has a different name
 
-            $.getJSON('https://sheets.googleapis.com/v4/spreadsheets/' + sheetId + '/values/' + sheetName + '?key=AIzaSyDUbmT9lzUW7ymFZjMTqcfY68blQB_HKc4', function(data) {
-                var rows = data.values;
-                var headers = rows[0];
-                var userRow = rows.find(row => row[0].toLowerCase() === userName.toLowerCase());
-                
-                if (userRow) {
-                    var linksList = $('#linksList');
-                    for (var i = 1; i < headers.length; i++) {
-                        if (userRow[i] && userRow[i].trim() !== '') {
-                            linksList.append('<li><a href="' + userRow[i] + '" target="_blank">' + headers[i] + '</a></li>');
+            console.log("Fetching data for user:", userName);
+
+            $.ajax({
+                url: 'https://sheets.googleapis.com/v4/spreadsheets/' + sheetId + '/values/' + sheetName,
+                type: 'GET',
+                data: {
+                    key: 'AIzaSyDUbmT9lzUW7ymFZjMTqcfY68blQB_HKc4'
+                },
+                success: function(data) {
+                    console.log("Data fetched successfully");
+                    var rows = data.values;
+                    var headers = rows[0];
+                    var userRow = rows.find(row => row[0].toLowerCase() === userName.toLowerCase());
+                    
+                    if (userRow) {
+                        var linksList = $('#linksList');
+                        for (var i = 1; i < headers.length; i++) {
+                            if (userRow[i] && userRow[i].trim() !== '') {
+                                linksList.append('<li><a href="' + userRow[i] + '" target="_blank">' + headers[i] + '</a></li>');
+                            }
                         }
+                    } else {
+                        $('#linksList').html('<li>No links found for this user.</li>');
                     }
-                } else {
-                    $('#linksList').html('<li>No links found for this user.</li>');
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.error("Error fetching data:", textStatus, errorThrown);
+                    $('#linksList').html('<li>Error fetching your links. Please try again later.</li>');
+                    $('#errorDetails').html('Error details: ' + textStatus + ' - ' + errorThrown);
                 }
-            }).fail(function(jqXHR, textStatus, errorThrown) {
-                console.error("Error fetching data:", textStatus, errorThrown);
-                $('#linksList').html('<li>Error fetching your links. Please try again later.</li>');
             });
         });
     </script>

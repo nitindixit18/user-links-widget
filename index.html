@@ -62,7 +62,7 @@
             var sheetName = 'Sheet1'; // Change this if your sheet has a different name
 
             // Fetch data from Google Sheets
-            $.getJSON('https://sheets.googleapis.com/v4/spreadsheets/' + sheetId + '/values/' + sheetName + '?key=1019035975170-gfk3o1hn09jufvrq6gmedqusc8bqsomc.apps.googleusercontent.com', function(data) {
+            $.getJSON('https://sheets.googleapis.com/v4/spreadsheets/' + sheetId + '/values/' + sheetName + '?key=AIzaSyDUbmT9lzUW7ymFZjMTqcfY68blQB_HKc4', function(data) {
                 var rows = data.values;
                 var headers = rows[0];
                 var userRow = rows.find(row => row[0] === userName);

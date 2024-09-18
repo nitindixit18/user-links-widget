@@ -46,7 +46,6 @@
 
     <script>
         $(document).ready(function() {
-            // Function to get URL parameters
             function getUrlParameter(name) {
                 name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
                 var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
@@ -54,30 +53,28 @@
                 return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
             };
 
-            // Get user name from URL parameter
             var userName = getUrlParameter('userName');
 
-            // Your Google Sheets ID
-            var sheetId = '1hCvScUNA_T0_WfaQkaxfBNIDVG4xcRYvb1d-DuyqUSg';
+            var sheetId = '1hCvScUNA_T0_WfaQkaxfBNIDVG4xcRYvb1d-DuyqUSg/';
             var sheetName = 'Sheet1'; // Change this if your sheet has a different name
 
-            // Fetch data from Google Sheets
             $.getJSON('https://sheets.googleapis.com/v4/spreadsheets/' + sheetId + '/values/' + sheetName + '?key=AIzaSyDUbmT9lzUW7ymFZjMTqcfY68blQB_HKc4', function(data) {
                 var rows = data.values;
                 var headers = rows[0];
-                var userRow = rows.find(row => row[0] === userName);
+                var userRow = rows.find(row => row[0].toLowerCase() === userName.toLowerCase());
                 
                 if (userRow) {
                     var linksList = $('#linksList');
                     for (var i = 1; i < headers.length; i++) {
-                        if (userRow[i]) {
+                        if (userRow[i] && userRow[i].trim() !== '') {
                             linksList.append('<li><a href="' + userRow[i] + '" target="_blank">' + headers[i] + '</a></li>');
                         }
                     }
                 } else {
                     $('#linksList').html('<li>No links found for this user.</li>');
                 }
-            }).fail(function() {
+            }).fail(function(jqXHR, textStatus, errorThrown) {
+                console.error("Error fetching data:", textStatus, errorThrown);
                 $('#linksList').html('<li>Error fetching your links. Please try again later.</li>');
             });
         });

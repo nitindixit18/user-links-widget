@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Personalized Links</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-top: 0;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            margin-bottom: 10px;
+        }
+        a {
+            color: #0066cc;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Your Personalized Links</h1>
+        <ul id="linksList"></ul>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            // Function to get URL parameters
+            function getUrlParameter(name) {
+                name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+                var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+                var results = regex.exec(location.search);
+                return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+            };
+
+            // Get user ID from URL parameter
+            var userId = getUrlParameter('userId');
+
+            // Fetch user data from GoHighLevel API
+            $.ajax({
+                url: 'https://rest.gohighlevel.com/v1/contacts/' + userId,
+                type: 'GET',
+                headers: {
+                    'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb21wYW55X2lkIjoiTmNkeTRLdzhhang1aXFnSWlZTlQiLCJ2ZXJzaW9uIjoxLCJpYXQiOjE3MjY2NTE5MDgxOTEsInN1YiI6IjR6VFZCaElxdnVDTGZxZTd5UzVqIn0.OO-iPG0MMYbzjx5bxtUJNa5HmtDWob1QjjkOMrC4hWo'
+                },
+                success: function(response) {
+                    var linksList = $('#linksList');
+                    
+                    // Add links to the list
+                    if (response.customField.personalLink1) {
+                        linksList.append('<li><a href="' + response.customField.personalLink1 + '">Personal Link 1</a></li>');
+                    }
+                    if (response.customField.personalLink2) {
+                        linksList.append('<li><a href="' + response.customField.personalLink2 + '">Personal Link 2</a></li>');
+                    }
+                    // Add more links as needed
+                },
+                error: function() {
+                    $('#linksList').html('<li>Error fetching your links. Please try again later.</li>');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -54,31 +54,31 @@
                 return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
             };
 
-            // Get user ID from URL parameter
-            var userId = getUrlParameter('userId');
+            // Get user name from URL parameter
+            var userName = getUrlParameter('userName');
 
-            // Fetch user data from GoHighLevel API
-            $.ajax({
-                url: 'https://rest.gohighlevel.com/v1/contacts/' + userId,
-                type: 'GET',
-                headers: {
-                    'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb21wYW55X2lkIjoiTmNkeTRLdzhhang1aXFnSWlZTlQiLCJ2ZXJzaW9uIjoxLCJpYXQiOjE3MjY2NTE5MDgxOTEsInN1YiI6IjR6VFZCaElxdnVDTGZxZTd5UzVqIn0.OO-iPG0MMYbzjx5bxtUJNa5HmtDWob1QjjkOMrC4hWo'
-                },
-                success: function(response) {
+            // Your Google Sheets ID
+            var sheetId = '1hCvScUNA_T0_WfaQkaxfBNIDVG4xcRYvb1d-DuyqUSg';
+            var sheetName = 'Sheet1'; // Change this if your sheet has a different name
+
+            // Fetch data from Google Sheets
+            $.getJSON('https://sheets.googleapis.com/v4/spreadsheets/' + sheetId + '/values/' + sheetName + '?key=1019035975170-gfk3o1hn09jufvrq6gmedqusc8bqsomc.apps.googleusercontent.com', function(data) {
+                var rows = data.values;
+                var headers = rows[0];
+                var userRow = rows.find(row => row[0] === userName);
+                
+                if (userRow) {
                     var linksList = $('#linksList');
-                    
-                    // Add links to the list
-                    if (response.customField.personalLink1) {
-                        linksList.append('<li><a href="' + response.customField.personalLink1 + '">Personal Link 1</a></li>');
+                    for (var i = 1; i < headers.length; i++) {
+                        if (userRow[i]) {
+                            linksList.append('<li><a href="' + userRow[i] + '" target="_blank">' + headers[i] + '</a></li>');
+                        }
                     }
-                    if (response.customField.personalLink2) {
-                        linksList.append('<li><a href="' + response.customField.personalLink2 + '">Personal Link 2</a></li>');
-                    }
-                    // Add more links as needed
-                },
-                error: function() {
-                    $('#linksList').html('<li>Error fetching your links. Please try again later.</li>');
+                } else {
+                    $('#linksList').html('<li>No links found for this user.</li>');
                 }
+            }).fail(function() {
+                $('#linksList').html('<li>Error fetching your links. Please try again later.</li>');
             });
         });
     </script>

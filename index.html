@@ -58,22 +58,17 @@
                 return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
             };
 
-            var userName = getUrlParameter('username'); // Changed to lowercase 'username'
-
-            var sheetId = '1hCvScUNA_T0_WfaQkaxfBNIDVG4xcRYvb1d-DuyqUSg';
-            var sheetName = 'Sheet1'; // Change this if your sheet has a different name
+            var userName = getUrlParameter('username');
 
             console.log("Fetching data for user:", userName);
 
             $.ajax({
-                url: 'https://sheets.googleapis.com/v4/spreadsheets/' + sheetId + '/values/' + sheetName,
+                url: 'https://script.googleusercontent.com/macros/echo?user_content_key=JisLqaDucxVFwzJl5h3TAOAsreEMiBCcl6Mmh0gabuJPxw7lsuyll6553yTvawDFlfD7iBTOxgKAShqCnJKzkQPoyZcHVmrdm5_BxDlH2jW0nuo2oDemN9CCS2h10ox_1xSncGQajx_ryfhECjZEnC8MaaIHpnkoyCTmw20itTustwwijf3ptLkR6kLBcDIsNeOm5didudNZ8UBRnABVYtGMKmLNOR2d5aWxJtgKVlnT9cjuZtN0V9z9Jw9Md8uu&lib=M7xzc1LPjscLbcCarraMoVv7wpVFceaFV',
                 type: 'GET',
-                data: {
-                    key: 'AIzaSyDUbmT9lzUW7ymFZjMTqcfY68blQB_HKc4'
-                },
+                dataType: 'jsonp',
                 success: function(data) {
                     console.log("Data fetched successfully");
-                    var rows = data.values;
+                    var rows = data;
                     var headers = rows[0];
                     var userRow = rows.find(row => row[0].toLowerCase() === userName.toLowerCase());
                     

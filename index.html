@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Personalized Links</title>
+    <title>Your Personalized Page Links</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <style>
         body {
@@ -17,36 +17,46 @@
             border-radius: 8px;
             padding: 20px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            max-width: 600px;
+            margin: 0 auto;
         }
         h1 {
             color: #333;
             margin-top: 0;
+            text-align: center;
         }
-        ul {
-            list-style-type: none;
-            padding: 0;
+        .link-group {
+            margin-bottom: 20px;
         }
-        li {
+        .link-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 10px;
         }
-        a {
-            color: #0066cc;
-            text-decoration: none;
+        .link-name {
+            font-weight: bold;
         }
-        a:hover {
-            text-decoration: underline;
+        .copy-btn {
+            background-color: #e6f3ff;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
         }
-        #errorDetails {
-            color: #ff0000;
-            margin-top: 10px;
+        .copy-btn:hover {
+            background-color: #cce6ff;
+        }
+        .divider {
+            border-top: 1px solid #ccc;
+            margin: 20px 0;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Your Personalized Links</h1>
-        <ul id="linksList"></ul>
-        <div id="errorDetails"></div>
+        <h1>YOUR PERSONALIZED PAGE LINKS</h1>
+        <div id="linksList"></div>
     </div>
 
     <script>
@@ -74,19 +84,59 @@
                     
                     if (userRow) {
                         var linksList = $('#linksList');
-                        for (var i = 1; i < headers.length; i++) {
-                            if (userRow[i] && userRow[i].trim() !== '') {
-                                linksList.append('<li><a href="' + userRow[i] + '" target="_blank">' + headers[i] + '</a></li>');
+                        var html = '<div class="link-group">';
+                        
+                        // Optin Links
+                        var optinLinks = [
+                            {sheet: 'General Optin', display: 'GENERAL OPTIN'},
+                            {sheet: 'Driver Optin', display: 'DRIVER OPTIN'},
+                            {sheet: 'Rider Optin', display: 'RIDER OPTIN'},
+                            {sheet: 'Rep Optin', display: 'REPS OPTIN'}
+                        ];
+                        
+                        optinLinks.forEach(function(link) {
+                            var index = headers.indexOf(link.sheet);
+                            if (index !== -1 && userRow[index]) {
+                                html += '<div class="link-item"><span class="link-name">' + link.display + '</span><button class="copy-btn" data-link="' + userRow[index] + '">Click To Copy</button></div>';
                             }
-                        }
+                        });
+                        
+                        html += '</div><div class="divider"></div><div class="link-group">';
+                        
+                        // Info Page Links
+                        var infoLinks = [
+                            {sheet: 'General', display: 'GENERAL INFO PAGE'},
+                            {sheet: 'Driver', display: 'DRIVER INFO PAGE'},
+                            {sheet: 'Rider', display: 'RIDER INFO PAGE'},
+                            {sheet: 'Rep', display: 'REPS INFO PAGE'}
+                        ];
+                        
+                        infoLinks.forEach(function(link) {
+                            var index = headers.indexOf(link.sheet);
+                            if (index !== -1 && userRow[index]) {
+                                html += '<div class="link-item"><span class="link-name">' + link.display + '</span><button class="copy-btn" data-link="' + userRow[index] + '">Click To Copy</button></div>';
+                            }
+                        });
+                        
+                        html += '</div>';
+                        linksList.html(html);
+                        
+                        // Add click event for copy buttons
+                        $('.copy-btn').click(function() {
+                            var link = $(this).data('link');
+                            navigator.clipboard.writeText(link).then(function() {
+                                alert('Link copied to clipboard!');
+                            }, function(err) {
+                                console.error('Could not copy text: ', err);
+                            });
+                        });
                     } else {
-                        $('#linksList').html('<li>No links found for this user.</li>');
+                        $('#linksList').html('<p>No links found for this user.</p>');
                     }
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     console.error("Error fetching data:", textStatus, errorThrown);
-                    $('#linksList').html('<li>Error fetching your links. Please try again later.</li>');
-                    $('#errorDetails').html('Error details: ' + textStatus + ' - ' + errorThrown);
+                    $('#linksList').html('<p>Error fetching your links. Please try again later.</p>');
                 }
             });
         });

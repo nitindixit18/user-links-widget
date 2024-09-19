@@ -4,69 +4,106 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your Personalized Page Links</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: 'Nunito Sans', sans-serif;
+            font-family: 'Roboto', sans-serif;
             margin: 0;
             padding: 20px;
-            background-color: #f0f0f0;
+            background-color: #f4f7f9;
+            color: #333;
         }
         .container {
-            max-width: 600px;
+            max-width: 1000px;
             margin: 0 auto;
             background-color: white;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
         }
         h1 {
-            color: #333;
+            color: #2c3e50;
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
+            font-weight: 700;
         }
-        input[type="text"], button {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 15px;
-            border-radius: 5px;
+        .input-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        input[type="text"] {
+            flex-grow: 1;
+            padding: 12px;
+            border-radius: 6px;
             border: 1px solid #ddd;
+            font-size: 16px;
         }
         button {
-            background-color: #007bff;
+            padding: 12px 24px;
+            background-color: #3498db;
             color: white;
             border: none;
+            border-radius: 6px;
             cursor: pointer;
             transition: background-color 0.3s;
+            font-size: 16px;
+            font-weight: 500;
         }
         button:hover {
-            background-color: #0056b3;
+            background-color: #2980b9;
+        }
+        .links-container {
+            display: flex;
+            gap: 30px;
+        }
+        .links-column {
+            flex: 1;
         }
         .link-group {
-            margin-top: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .link-group h2 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #2c3e50;
+            font-size: 20px;
         }
         .link-item {
-            margin-bottom: 10px;
-            padding: 10px;
-            background-color: #f8f8f8;
-            border-radius: 5px;
+            margin-bottom: 15px;
         }
         .link-name {
-            font-weight: bold;
-            color: #444;
+            font-weight: 500;
+            color: #34495e;
             display: block;
             margin-bottom: 5px;
         }
         .link-url {
+            display: block;
             word-break: break-all;
-            color: #007bff;
+            color: #3498db;
+            text-decoration: none;
+            padding: 8px;
+            background-color: #e9f2fb;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        .link-url:hover {
+            background-color: #d4e6f7;
         }
         .error-message {
-            color: red;
+            color: #e74c3c;
             text-align: center;
+            margin-bottom: 20px;
+            font-weight: 500;
         }
-        .divider {
-            border-top: 1px solid #ddd;
-            margin: 20px 0;
+        @media (max-width: 768px) {
+            .links-container {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
@@ -74,11 +111,11 @@
     <div class="container">
         <h1>Your Personalized Page Links</h1>
         <div id="errorMessage" class="error-message"></div>
-        <div id="inputSection">
+        <div class="input-section">
             <input type="text" id="usernameInput" placeholder="Enter your username" />
             <button onclick="fetchUserLinks()">Get My Links</button>
         </div>
-        <div id="linksList"></div>
+        <div id="linksList" class="links-container"></div>
     </div>
 
     <script>
@@ -89,7 +126,7 @@
                 return;
             }
 
-            const scriptUrl = 'https://script.google.com/macros/s/AKfycbx_L_XKnjk9wNd-_hUkjHMv1Y_T5_mGFVCfD7SBKrzl1Gl0xeCa2WZJB62KYhisa_ljIg/exec'; // Replace with your Google Apps Script URL
+            const scriptUrl = 'https://script.google.com/macros/s/AKfycbx_L_XKnjk9wNd-_hUkjHMv1Y_T5_mGFVCfD7SBKrzl1Gl0xeCa2WZJB62KYhisa_ljIg/exec';
 
             fetch(scriptUrl + '?username=' + encodeURIComponent(username))
                 .then(response => response.json())
@@ -113,31 +150,40 @@
             const headers = data[0];
             const userRow = data[1];
             
-            let html = '<div class="link-group">';
+            let optinHtml = '<div class="links-column"><div class="link-group"><h2>Optin Page Links</h2>';
+            let infoHtml = '<div class="links-column"><div class="link-group"><h2>Info Page Links</h2>';
 
             const allLinks = [
-                {sheet: 'General Optin', display: 'GENERAL OPTIN'},
-                {sheet: 'Driver Optin', display: 'DRIVER OPTIN'},
-                {sheet: 'Rider Optin', display: 'RIDER OPTIN'},
-                {sheet: 'Rep Optin', display: 'REPS OPTIN'},
-                {sheet: 'General', display: 'GENERAL INFO PAGE'},
-                {sheet: 'Driver', display: 'DRIVER INFO PAGE'},
-                {sheet: 'Rider', display: 'RIDER INFO PAGE'},
-                {sheet: 'Rep', display: 'REPS INFO PAGE'}
+                {sheet: 'General Optin', display: 'GENERAL OPTIN', type: 'optin'},
+                {sheet: 'Driver Optin', display: 'DRIVER OPTIN', type: 'optin'},
+                {sheet: 'Rider Optin', display: 'RIDER OPTIN', type: 'optin'},
+                {sheet: 'Rep Optin', display: 'REPS OPTIN', type: 'optin'},
+                {sheet: 'General', display: 'GENERAL INFO PAGE', type: 'info'},
+                {sheet: 'Driver', display: 'DRIVER INFO PAGE', type: 'info'},
+                {sheet: 'Rider', display: 'RIDER INFO PAGE', type: 'info'},
+                {sheet: 'Rep', display: 'REPS INFO PAGE', type: 'info'}
             ];
 
-            allLinks.forEach(function(link, index) {
+            allLinks.forEach(function(link) {
                 const columnIndex = headers.indexOf(link.sheet);
                 if (columnIndex !== -1 && userRow[columnIndex]) {
-                    html += '<div class="link-item"><span class="link-name">' + link.display + '</span><a href="' + userRow[columnIndex] + '" target="_blank" class="link-url">' + userRow[columnIndex] + '</a></div>';
-                }
-                if (index === 3) {
-                    html += '</div><div class="divider"></div><div class="link-group">';
+                    const linkHtml = `<div class="link-item">
+                        <span class="link-name">${link.display}</span>
+                        <a href="${userRow[columnIndex]}" target="_blank" class="link-url">${userRow[columnIndex]}</a>
+                    </div>`;
+                    
+                    if (link.type === 'optin') {
+                        optinHtml += linkHtml;
+                    } else {
+                        infoHtml += linkHtml;
+                    }
                 }
             });
 
-            html += '</div>';
-            linksList.innerHTML = html;
+            optinHtml += '</div></div>';
+            infoHtml += '</div></div>';
+
+            linksList.innerHTML = optinHtml + infoHtml;
         }
     </script>
 </body>

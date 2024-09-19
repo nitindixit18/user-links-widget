@@ -45,9 +45,6 @@
             margin-top: 20px;
         }
         .link-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
             margin-bottom: 10px;
             padding: 10px;
             background-color: #f8f8f8;
@@ -56,18 +53,12 @@
         .link-name {
             font-weight: bold;
             color: #444;
+            display: block;
+            margin-bottom: 5px;
         }
-        .copy-btn {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        .copy-btn:hover {
-            background-color: #0056b3;
+        .link-url {
+            word-break: break-all;
+            color: #007bff;
         }
         .error-message {
             color: red;
@@ -138,7 +129,7 @@
             allLinks.forEach(function(link, index) {
                 const columnIndex = headers.indexOf(link.sheet);
                 if (columnIndex !== -1 && userRow[columnIndex]) {
-                    html += '<div class="link-item"><span class="link-name">' + link.display + '</span><button class="copy-btn" data-link="' + userRow[columnIndex] + '">Click To Copy</button></div>';
+                    html += '<div class="link-item"><span class="link-name">' + link.display + '</span><a href="' + userRow[columnIndex] + '" target="_blank" class="link-url">' + userRow[columnIndex] + '</a></div>';
                 }
                 if (index === 3) {
                     html += '</div><div class="divider"></div><div class="link-group">';
@@ -147,24 +138,6 @@
 
             html += '</div>';
             linksList.innerHTML = html;
-
-            document.querySelectorAll('.copy-btn').forEach(function(btn) {
-                btn.addEventListener('click', function() {
-                    const link = this.getAttribute('data-link');
-                    navigator.clipboard.writeText(link).then(function() {
-                        const originalText = btn.textContent;
-                        btn.textContent = 'Copied!';
-                        btn.style.backgroundColor = '#2196F3';
-                        setTimeout(function() {
-                            btn.textContent = originalText;
-                            btn.style.backgroundColor = '';
-                        }, 1500);
-                    }, function(err) {
-                        console.error('Could not copy text: ', err);
-                        alert('Failed to copy link. Please try again.');
-                    });
-                });
-            });
         }
     </script>
 </body>

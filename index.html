@@ -5,15 +5,56 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your Personalized Page Links</title>
     <style>
-        /* (Previous CSS styles remain the same) */
-        #debugInfo {
-            margin-top: 20px;
-            padding: 10px;
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
             background-color: #f0f0f0;
-            border: 1px solid #ccc;
-            font-family: monospace;
-            white-space: pre-wrap;
-            word-wrap: break-word;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .link-group {
+            margin-bottom: 20px;
+        }
+        .link-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #f8f8f8;
+            border-radius: 5px;
+        }
+        .link-name {
+            font-weight: bold;
+            color: #444;
+        }
+        .copy-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .copy-btn:hover {
+            background-color: #45a049;
+        }
+        .divider {
+            border-top: 1px solid #ddd;
+            margin: 20px 0;
         }
     </style>
 </head>
@@ -21,18 +62,10 @@
     <div class="container">
         <h1>YOUR PERSONALIZED PAGE LINKS</h1>
         <div id="linksList"></div>
-        <div id="debugInfo"></div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            var debugInfo = document.getElementById('debugInfo');
-            function log(message) {
-                var timestamp = new Date().toLocaleTimeString();
-                debugInfo.innerHTML += timestamp + ': ' + message + '\n';
-                console.log(timestamp + ': ' + message);
-            }
-
             function getUrlParameter(name) {
                 name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
                 var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
@@ -43,105 +76,72 @@
             var userName = getUrlParameter('username');
             var scriptUrl = 'https://script.google.com/macros/s/AKfycby9O7qBpwqH8jSoJlSQcVhtMlbRBo3IEYqCE36o_wpbf3pECGK1nofb18o4KVlu62TnRQ/exec'; // Ensure this is the correct, full URL
 
-            log('Fetching data for user: ' + userName);
-
             fetch(scriptUrl + '?username=' + encodeURIComponent(userName))
                 .then(response => {
-                    log('Response received. Status: ' + response.status);
                     if (!response.ok) {
                         throw new Error('HTTP error ' + response.status);
                     }
-                    return response.text(); // Use text() instead of json() to see the raw response
+                    return response.json();
                 })
-                .then(data => {
-                    log('Data received. Length: ' + data.length);
-                    log('Raw data: ' + data.substring(0, 200) + '...'); // Log first 200 characters
-                    try {
-                        const jsonData = JSON.parse(data);
-                        handleResponse(jsonData);
-                    } catch (e) {
-                        log('Error parsing JSON: ' + e.message);
-                    }
-                })
+                .then(data => processData(data))
                 .catch(error => {
-                    log('Error fetching data: ' + error.message);
+                    console.error('Error fetching data:', error);
                     document.getElementById('linksList').innerHTML = '<p>Error fetching your links. Please try again later.</p>';
                 });
 
-            function handleResponse(data) {
-                log('Handling response...');
-                log('Data type: ' + typeof data);
-                log('Data structure: ' + JSON.stringify(data).substring(0, 200) + '...');
-                processData(data);
-            }
-
             function processData(data) {
-                log('Processing data...');
-                if (!Array.isArray(data) || data.length === 0) {
-                    log('Error: Invalid data format received');
+                if (!Array.isArray(data) || data.length !== 2) {
                     document.getElementById('linksList').innerHTML = '<p>Error: Invalid data format received.</p>';
                     return;
                 }
 
-                var rows = data;
-                var headers = rows[0];
-                log('Headers: ' + JSON.stringify(headers));
-                var userRow = rows.find(row => row[0].toLowerCase() === userName.toLowerCase());
+                var headers = data[0];
+                var userRow = data[1];
+
+                var linksList = document.getElementById('linksList');
+                var html = '<div class="link-group">';
                 
-                if (userRow) {
-                    log('User row found: ' + JSON.stringify(userRow));
-                    var linksList = document.getElementById('linksList');
-                    var html = '<div class="link-group">';
-                    
-                    var optinLinks = [
-                        {sheet: 'General Optin', display: 'GENERAL OPTIN'},
-                        {sheet: 'Driver Optin', display: 'DRIVER OPTIN'},
-                        {sheet: 'Rider Optin', display: 'RIDER OPTIN'},
-                        {sheet: 'Rep Optin', display: 'REPS OPTIN'}
-                    ];
-                    
-                    optinLinks.forEach(function(link) {
-                        var index = headers.indexOf(link.sheet);
-                        if (index !== -1 && userRow[index]) {
-                            html += '<div class="link-item"><span class="link-name">' + link.display + '</span><button class="copy-btn" data-link="' + userRow[index] + '">Click To Copy</button></div>';
-                        }
-                    });
-                    
-                    html += '</div><div class="divider"></div><div class="link-group">';
-                    
-                    var infoLinks = [
-                        {sheet: 'General', display: 'GENERAL INFO PAGE'},
-                        {sheet: 'Driver', display: 'DRIVER INFO PAGE'},
-                        {sheet: 'Rider', display: 'RIDER INFO PAGE'},
-                        {sheet: 'Rep', display: 'REPS INFO PAGE'}
-                    ];
-                    
-                    infoLinks.forEach(function(link) {
-                        var index = headers.indexOf(link.sheet);
-                        if (index !== -1 && userRow[index]) {
-                            html += '<div class="link-item"><span class="link-name">' + link.display + '</span><button class="copy-btn" data-link="' + userRow[index] + '">Click To Copy</button></div>';
-                        }
-                    });
-                    
-                    html += '</div>';
-                    linksList.innerHTML = html;
-                    
-                    document.querySelectorAll('.copy-btn').forEach(function(btn) {
-                        btn.addEventListener('click', function() {
-                            var link = this.getAttribute('data-link');
-                            navigator.clipboard.writeText(link).then(function() {
-                                alert('Link copied to clipboard!');
-                            }, function(err) {
-                                console.error('Could not copy text: ', err);
-                            });
+                var allLinks = [
+                    {sheet: 'General Optin', display: 'GENERAL OPTIN'},
+                    {sheet: 'Driver Optin', display: 'DRIVER OPTIN'},
+                    {sheet: 'Rider Optin', display: 'RIDER OPTIN'},
+                    {sheet: 'Rep Optin', display: 'REPS OPTIN'},
+                    {sheet: 'General', display: 'GENERAL INFO PAGE'},
+                    {sheet: 'Driver', display: 'DRIVER INFO PAGE'},
+                    {sheet: 'Rider', display: 'RIDER INFO PAGE'},
+                    {sheet: 'Rep', display: 'REPS INFO PAGE'}
+                ];
+                
+                allLinks.forEach(function(link, index) {
+                    var columnIndex = headers.indexOf(link.sheet);
+                    if (columnIndex !== -1 && userRow[columnIndex]) {
+                        html += '<div class="link-item"><span class="link-name">' + link.display + '</span><button class="copy-btn" data-link="' + userRow[columnIndex] + '">Click To Copy</button></div>';
+                    }
+                    if (index === 3) {
+                        html += '</div><div class="divider"></div><div class="link-group">';
+                    }
+                });
+                
+                html += '</div>';
+                linksList.innerHTML = html;
+                
+                document.querySelectorAll('.copy-btn').forEach(function(btn) {
+                    btn.addEventListener('click', function() {
+                        var link = this.getAttribute('data-link');
+                        navigator.clipboard.writeText(link).then(function() {
+                            var originalText = btn.textContent;
+                            btn.textContent = 'Copied!';
+                            btn.style.backgroundColor = '#2196F3';
+                            setTimeout(function() {
+                                btn.textContent = originalText;
+                                btn.style.backgroundColor = '';
+                            }, 1500);
+                        }, function(err) {
+                            console.error('Could not copy text: ', err);
+                            alert('Failed to copy link. Please try again.');
                         });
                     });
-                    
-                    log('Links displayed successfully');
-                } else {
-                    log('No user row found for: ' + userName);
-                    document.getElementById('linksList').innerHTML = '<p>No links found for this user.</p>';
-                }
+                });
             }
         });
     </script>

@@ -98,7 +98,7 @@
                 return;
             }
 
-            const scriptUrl = 'https://script.google.com/macros/s/AKfycby9O7qBpwqH8jSoJlSQcVhtMlbRBo3IEYqCE36o_wpbf3pECGK1nofb18o4KVlu62TnRQ/exec'; // Replace with your Google Apps Script URL
+            const scriptUrl = 'https://script.google.com/macros/s/AKfycbx_L_XKnjk9wNd-_hUkjHMv1Y_T5_mGFVCfD7SBKrzl1Gl0xeCa2WZJB62KYhisa_ljIg/exec'; // Replace with your Google Apps Script URL
 
             fetch(scriptUrl + '?username=' + encodeURIComponent(username))
                 .then(response => response.json())
@@ -137,7 +137,7 @@
 
             allLinks.forEach(function(link, index) {
                 const columnIndex = headers.indexOf(link.sheet);
-                if (columnIndex !== 1 && userRow[columnIndex]) {
+                if (columnIndex !== -1 && userRow[columnIndex]) {
                     html += '<div class="link-item"><span class="link-name">' + link.display + '</span><button class="copy-btn" data-link="' + userRow[columnIndex] + '">Click To Copy</button></div>';
                 }
                 if (index === 3) {

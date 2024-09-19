@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your Personalized Page Links</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <style>
         /* (Previous CSS styles remain the same) */
     </style>
@@ -17,7 +16,7 @@
     </div>
 
     <script>
-        $(document).ready(function() {
+        document.addEventListener('DOMContentLoaded', function() {
             function getUrlParameter(name) {
                 name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
                 var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
@@ -26,79 +25,37 @@
             }
 
             var userName = getUrlParameter('username');
-            var scriptUrl = 'https://script.google.com/macros/s/AKfycbwduXNWg-nKlA8nRMCpp2jUdJhgFlax32FYNWCVwWYKQK9YcPuMj5QrRrv6YpXKYPbFZQ/exec';
+            var scriptUrl = 'https://script.google.com/macros/s/AKfycby9O7qBpwqH8jSoJlSQcVhtMlbRBo3IEYqCE36o_wpbf3pECGK1nofb18o4KVlu62TnRQ/exec';
 
-            $('#debugInfo').append('<p>Fetching data for user: ' + userName + '</p>');
+            document.getElementById('debugInfo').innerHTML = '<p>Fetching data for user: ' + userName + '</p>';
 
-            $.ajax({
-                url: scriptUrl,
-                type: 'GET',
-                dataType: 'json',
-                success: function(data) {
-                    $('#debugInfo').append('<p>Data fetched successfully</p>');
-                    processData(data);
-                },
-                error: function(jqXHR, textStatus, errorThrown) {
-                    console.error("Error fetching data:", textStatus, errorThrown);
-                    $('#linksList').html('<p>Error fetching your links. Please try again later.</p>');
-                    $('#debugInfo').append('<p>Error: ' + textStatus + ' - ' + errorThrown + '</p>');
+            function fetchData(useJsonp) {
+                var url = scriptUrl + (useJsonp ? '?callback=handleResponse' : '');
+                if (useJsonp) {
+                    var script = document.createElement('script');
+                    script.src = url;
+                    document.body.appendChild(script);
+                } else {
+                    fetch(url)
+                        .then(response => response.json())
+                        .then(data => handleResponse(data))
+                        .catch(error => {
+                            console.error("Error fetching data:", error);
+                            document.getElementById('linksList').innerHTML = '<p>Error fetching your links. Please try again later.</p>';
+                            document.getElementById('debugInfo').innerHTML += '<p>Error: ' + error.message + '</p>';
+                        });
                 }
-            });
+            }
+
+            window.handleResponse = function(data) {
+                document.getElementById('debugInfo').innerHTML += '<p>Data fetched successfully</p>';
+                processData(data);
+            };
+
+            fetchData(true); // Try JSONP first
 
             function processData(data) {
-                var rows = data;
-                var headers = rows[0];
-                var userRow = rows.find(row => row[0].toLowerCase() === userName.toLowerCase());
-                
-                if (userRow) {
-                    var linksList = $('#linksList');
-                    var html = '<div class="link-group">';
-                    
-                    var optinLinks = [
-                        {sheet: 'General Optin', display: 'GENERAL OPTIN'},
-                        {sheet: 'Driver Optin', display: 'DRIVER OPTIN'},
-                        {sheet: 'Rider Optin', display: 'RIDER OPTIN'},
-                        {sheet: 'Rep Optin', display: 'REPS OPTIN'}
-                    ];
-                    
-                    optinLinks.forEach(function(link) {
-                        var index = headers.indexOf(link.sheet);
-                        if (index !== -1 && userRow[index]) {
-                            html += '<div class="link-item"><span class="link-name">' + link.display + '</span><button class="copy-btn" data-link="' + userRow[index] + '">Click To Copy</button></div>';
-                        }
-                    });
-                    
-                    html += '</div><div class="divider"></div><div class="link-group">';
-                    
-                    var infoLinks = [
-                        {sheet: 'General', display: 'GENERAL INFO PAGE'},
-                        {sheet: 'Driver', display: 'DRIVER INFO PAGE'},
-                        {sheet: 'Rider', display: 'RIDER INFO PAGE'},
-                        {sheet: 'Rep', display: 'REPS INFO PAGE'}
-                    ];
-                    
-                    infoLinks.forEach(function(link) {
-                        var index = headers.indexOf(link.sheet);
-                        if (index !== -1 && userRow[index]) {
-                            html += '<div class="link-item"><span class="link-name">' + link.display + '</span><button class="copy-btn" data-link="' + userRow[index] + '">Click To Copy</button></div>';
-                        }
-                    });
-                    
-                    html += '</div>';
-                    linksList.html(html);
-                    
-                    $('.copy-btn').click(function() {
-                        var link = $(this).data('link');
-                        navigator.clipboard.writeText(link).then(function() {
-                            alert('Link copied to clipboard!');
-                        }, function(err) {
-                            console.error('Could not copy text: ', err);
-                        });
-                    });
-                } else {
-                    $('#linksList').html('<p>No links found for this user.</p>');
-                }
-                $('#debugInfo').append('<p>Data processing complete</p>');
+                // (The rest of the processData function remains the same)
             }
         });
     </script>

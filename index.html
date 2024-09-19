@@ -80,18 +80,15 @@
     </style>
 </head>
 <body>
-<div class="container">
-    <h1>Your Personalized Page Links</h1>
-    <div id="errorMessage" class="error-message"></div>
-    <div id="inputSection">
-        <label for="query">Enter your full name or Referral ID:</label>
-        <div class="input-wrapper">
-            <input type="text" id="query" name="query" placeholder="Full Name or Referral ID">
-            <button id="get-links" onclick="fetchLinks()">Get My Links</button>
+    <div class="container">
+        <h1>Your Personalized Page Links</h1>
+        <div id="errorMessage" class="error-message"></div>
+        <div id="inputSection">
+            <input type="text" id="usernameInput" placeholder="Enter your username" />
+            <button onclick="fetchUserLinks()">Get My Links</button>
         </div>
+        <div id="linksList"></div>
     </div>
-    <div id="linksList"></div>
-</div>
 
     <script>
         function fetchUserLinks() {
@@ -101,7 +98,7 @@
                 return;
             }
 
-            const scriptUrl = 'https://script.google.com/macros/s/AKfycbyLa-Y5Ck93GP1P5tZCizUB8Y_nKSkllN-SC13G8psXcfGnwss_AGKD5Q9mxzAhNzah5w/exec'; // Replace with your Google Apps Script URL
+            const scriptUrl = 'https://script.google.com/macros/s/AKfycby9O7qBpwqH8jSoJlSQcVhtMlbRBo3IEYqCE36o_wpbf3pECGK1nofb18o4KVlu62TnRQ/exec'; // Replace with your Google Apps Script URL
 
             fetch(scriptUrl + '?username=' + encodeURIComponent(username))
                 .then(response => response.json())

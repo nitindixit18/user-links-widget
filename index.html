@@ -137,7 +137,7 @@
 
             allLinks.forEach(function(link, index) {
                 const columnIndex = headers.indexOf(link.sheet);
-                if (columnIndex !== -1 && userRow[columnIndex]) {
+                if (columnIndex !== 1 && userRow[columnIndex]) {
                     html += '<div class="link-item"><span class="link-name">' + link.display + '</span><button class="copy-btn" data-link="' + userRow[columnIndex] + '">Click To Copy</button></div>';
                 }
                 if (index === 3) {

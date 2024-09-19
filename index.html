@@ -12,6 +12,8 @@
             background-color: #f0f0f0;
             border: 1px solid #ccc;
             font-family: monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
         }
     </style>
 </head>
@@ -26,8 +28,9 @@
         document.addEventListener('DOMContentLoaded', function() {
             var debugInfo = document.getElementById('debugInfo');
             function log(message) {
-                debugInfo.innerHTML += '<p>' + new Date().toLocaleTimeString() + ': ' + message + '</p>';
-                console.log(message);
+                var timestamp = new Date().toLocaleTimeString();
+                debugInfo.innerHTML += timestamp + ': ' + message + '\n';
+                console.log(timestamp + ': ' + message);
             }
 
             function getUrlParameter(name) {
@@ -38,7 +41,7 @@
             }
 
             var userName = getUrlParameter('username');
-            var scriptUrl = 'https://script.google.com/macros/s/AKfycby9O7qBpwqH8jSoJlSQcVhtMlbRBo3IEYqCE36o_wpbf3pECGK1nofb18o4KVlu62TnRQ/exec'; // Replace with your full URL
+            var scriptUrl = 'https://script.google.com/macros/s/AKfycby9O7qBpwqH8jSoJlSQcVhtMlbRBo3IEYqCE36o_wpbf3pECGK1nofb18o4KVlu62TnRQ/exec'; // Ensure this is the correct, full URL
 
             log('Fetching data for user: ' + userName);
 
@@ -54,13 +57,12 @@
                     };
                     document.body.appendChild(script);
                     
-                    // Set a timeout for JSONP
                     setTimeout(function() {
                         if (!window.dataReceived) {
                             log('JSONP request timed out. Trying direct fetch...');
                             fetchData(false);
                         }
-                    }, 5000); // 5 second timeout
+                    }, 5000);
                 } else {
                     fetch(scriptUrl + '?username=' + encodeURIComponent(userName))
                         .then(response => {
@@ -80,16 +82,25 @@
             window.handleResponse = function(data) {
                 window.dataReceived = true;
                 log('Data received. Processing...');
+                log('Received data: ' + JSON.stringify(data));
                 processData(data);
             };
 
             function processData(data) {
                 log('Processing data...');
+                if (!Array.isArray(data) || data.length === 0) {
+                    log('Error: Invalid data format received');
+                    document.getElementById('linksList').innerHTML = '<p>Error: Invalid data format received.</p>';
+                    return;
+                }
+
                 var rows = data;
                 var headers = rows[0];
+                log('Headers: ' + JSON.stringify(headers));
                 var userRow = rows.find(row => row[0].toLowerCase() === userName.toLowerCase());
                 
                 if (userRow) {
+                    log('User row found: ' + JSON.stringify(userRow));
                     var linksList = document.getElementById('linksList');
                     var html = '<div class="link-group">';
                     
@@ -139,8 +150,8 @@
                     
                     log('Links displayed successfully');
                 } else {
+                    log('No user row found for: ' + userName);
                     document.getElementById('linksList').innerHTML = '<p>No links found for this user.</p>';
-                    log('No links found for user');
                 }
             }
 

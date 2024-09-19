@@ -45,46 +45,35 @@
 
             log('Fetching data for user: ' + userName);
 
-            function fetchData(useJsonp) {
-                log('Attempting ' + (useJsonp ? 'JSONP' : 'direct fetch') + '...');
-                
-                if (useJsonp) {
-                    var script = document.createElement('script');
-                    script.src = scriptUrl + '?callback=handleResponse&username=' + encodeURIComponent(userName);
-                    script.onerror = function() {
-                        log('JSONP request failed. Trying direct fetch...');
-                        fetchData(false);
-                    };
-                    document.body.appendChild(script);
-                    
-                    setTimeout(function() {
-                        if (!window.dataReceived) {
-                            log('JSONP request timed out. Trying direct fetch...');
-                            fetchData(false);
-                        }
-                    }, 5000);
-                } else {
-                    fetch(scriptUrl + '?username=' + encodeURIComponent(userName))
-                        .then(response => {
-                            if (!response.ok) {
-                                throw new Error('HTTP error ' + response.status);
-                            }
-                            return response.json();
-                        })
-                        .then(data => handleResponse(data))
-                        .catch(error => {
-                            log('Error fetching data: ' + error.message);
-                            document.getElementById('linksList').innerHTML = '<p>Error fetching your links. Please try again later.</p>';
-                        });
-                }
-            }
+            fetch(scriptUrl + '?username=' + encodeURIComponent(userName))
+                .then(response => {
+                    log('Response received. Status: ' + response.status);
+                    if (!response.ok) {
+                        throw new Error('HTTP error ' + response.status);
+                    }
+                    return response.text(); // Use text() instead of json() to see the raw response
+                })
+                .then(data => {
+                    log('Data received. Length: ' + data.length);
+                    log('Raw data: ' + data.substring(0, 200) + '...'); // Log first 200 characters
+                    try {
+                        const jsonData = JSON.parse(data);
+                        handleResponse(jsonData);
+                    } catch (e) {
+                        log('Error parsing JSON: ' + e.message);
+                    }
+                })
+                .catch(error => {
+                    log('Error fetching data: ' + error.message);
+                    document.getElementById('linksList').innerHTML = '<p>Error fetching your links. Please try again later.</p>';
+                });
 
-            window.handleResponse = function(data) {
-                window.dataReceived = true;
-                log('Data received. Processing...');
-                log('Received data: ' + JSON.stringify(data));
+            function handleResponse(data) {
+                log('Handling response...');
+                log('Data type: ' + typeof data);
+                log('Data structure: ' + JSON.stringify(data).substring(0, 200) + '...');
                 processData(data);
-            };
+            }
 
             function processData(data) {
                 log('Processing data...');
@@ -154,8 +143,6 @@
                     document.getElementById('linksList').innerHTML = '<p>No links found for this user.</p>';
                 }
             }
-
-            fetchData(true); // Start with JSONP
         });
     </script>
 </body>

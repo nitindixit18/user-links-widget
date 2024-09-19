@@ -6,6 +6,13 @@
     <title>Your Personalized Page Links</title>
     <style>
         /* (Previous CSS styles remain the same) */
+        #debugInfo {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            font-family: monospace;
+        }
     </style>
 </head>
 <body>
@@ -17,6 +24,12 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            var debugInfo = document.getElementById('debugInfo');
+            function log(message) {
+                debugInfo.innerHTML += '<p>' + new Date().toLocaleTimeString() + ': ' + message + '</p>';
+                console.log(message);
+            }
+
             function getUrlParameter(name) {
                 name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
                 var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
@@ -25,38 +38,113 @@
             }
 
             var userName = getUrlParameter('username');
-            var scriptUrl = 'https://script.google.com/macros/s/AKfycby9O7qBpwqH8jSoJlSQcVhtMlbRBo3IEYqCE36o_wpbf3pECGK1nofb18o4KVlu62TnRQ/exec';
+            var scriptUrl = 'https://script.google.com/macros/s/AKfycby9O7qBpwqH8jSoJlSQcVhtMlbRBo3IEYqCE36o_wpbf3pECGK1nofb18o4KVlu62TnRQ/exec'; // Replace with your full URL
 
-            document.getElementById('debugInfo').innerHTML = '<p>Fetching data for user: ' + userName + '</p>';
+            log('Fetching data for user: ' + userName);
 
             function fetchData(useJsonp) {
-                var url = scriptUrl + (useJsonp ? '?callback=handleResponse' : '');
+                log('Attempting ' + (useJsonp ? 'JSONP' : 'direct fetch') + '...');
+                
                 if (useJsonp) {
                     var script = document.createElement('script');
-                    script.src = url;
+                    script.src = scriptUrl + '?callback=handleResponse&username=' + encodeURIComponent(userName);
+                    script.onerror = function() {
+                        log('JSONP request failed. Trying direct fetch...');
+                        fetchData(false);
+                    };
                     document.body.appendChild(script);
+                    
+                    // Set a timeout for JSONP
+                    setTimeout(function() {
+                        if (!window.dataReceived) {
+                            log('JSONP request timed out. Trying direct fetch...');
+                            fetchData(false);
+                        }
+                    }, 5000); // 5 second timeout
                 } else {
-                    fetch(url)
-                        .then(response => response.json())
+                    fetch(scriptUrl + '?username=' + encodeURIComponent(userName))
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('HTTP error ' + response.status);
+                            }
+                            return response.json();
+                        })
                         .then(data => handleResponse(data))
                         .catch(error => {
-                            console.error("Error fetching data:", error);
+                            log('Error fetching data: ' + error.message);
                             document.getElementById('linksList').innerHTML = '<p>Error fetching your links. Please try again later.</p>';
-                            document.getElementById('debugInfo').innerHTML += '<p>Error: ' + error.message + '</p>';
                         });
                 }
             }
 
             window.handleResponse = function(data) {
-                document.getElementById('debugInfo').innerHTML += '<p>Data fetched successfully</p>';
+                window.dataReceived = true;
+                log('Data received. Processing...');
                 processData(data);
             };
 
-            fetchData(true); // Try JSONP first
-
             function processData(data) {
-                // (The rest of the processData function remains the same)
+                log('Processing data...');
+                var rows = data;
+                var headers = rows[0];
+                var userRow = rows.find(row => row[0].toLowerCase() === userName.toLowerCase());
+                
+                if (userRow) {
+                    var linksList = document.getElementById('linksList');
+                    var html = '<div class="link-group">';
+                    
+                    var optinLinks = [
+                        {sheet: 'General Optin', display: 'GENERAL OPTIN'},
+                        {sheet: 'Driver Optin', display: 'DRIVER OPTIN'},
+                        {sheet: 'Rider Optin', display: 'RIDER OPTIN'},
+                        {sheet: 'Rep Optin', display: 'REPS OPTIN'}
+                    ];
+                    
+                    optinLinks.forEach(function(link) {
+                        var index = headers.indexOf(link.sheet);
+                        if (index !== -1 && userRow[index]) {
+                            html += '<div class="link-item"><span class="link-name">' + link.display + '</span><button class="copy-btn" data-link="' + userRow[index] + '">Click To Copy</button></div>';
+                        }
+                    });
+                    
+                    html += '</div><div class="divider"></div><div class="link-group">';
+                    
+                    var infoLinks = [
+                        {sheet: 'General', display: 'GENERAL INFO PAGE'},
+                        {sheet: 'Driver', display: 'DRIVER INFO PAGE'},
+                        {sheet: 'Rider', display: 'RIDER INFO PAGE'},
+                        {sheet: 'Rep', display: 'REPS INFO PAGE'}
+                    ];
+                    
+                    infoLinks.forEach(function(link) {
+                        var index = headers.indexOf(link.sheet);
+                        if (index !== -1 && userRow[index]) {
+                            html += '<div class="link-item"><span class="link-name">' + link.display + '</span><button class="copy-btn" data-link="' + userRow[index] + '">Click To Copy</button></div>';
+                        }
+                    });
+                    
+                    html += '</div>';
+                    linksList.innerHTML = html;
+                    
+                    document.querySelectorAll('.copy-btn').forEach(function(btn) {
+                        btn.addEventListener('click', function() {
+                            var link = this.getAttribute('data-link');
+                            navigator.clipboard.writeText(link).then(function() {
+                                alert('Link copied to clipboard!');
+                            }, function(err) {
+                                console.error('Could not copy text: ', err);
+                            });
+                        });
+                    });
+                    
+                    log('Links displayed successfully');
+                } else {
+                    document.getElementById('linksList').innerHTML = '<p>No links found for this user.</p>';
+                    log('No links found for user');
+                }
             }
+
+            fetchData(true); // Start with JSONP
         });
     </script>
 </body>

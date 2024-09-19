@@ -80,16 +80,18 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Your Personalized Page Links</h1>
-        <div id="errorMessage" class="error-message"></div>
-        <div id="inputSection">
+<div class="container">
+    <h1>Your Personalized Page Links</h1>
+    <div id="errorMessage" class="error-message"></div>
+    <div id="inputSection">
         <label for="query">Enter your full name or Referral ID:</label>
-        <input type="text" id="query" name="query" placeholder="Full Name or Referral ID">
-        <button id="get-links" onclick="fetchLinks()">Get My Links</button>
+        <div class="input-wrapper">
+            <input type="text" id="query" name="query" placeholder="Full Name or Referral ID">
+            <button id="get-links" onclick="fetchLinks()">Get My Links</button>
         </div>
-        <div id="linksList"></div>
     </div>
+    <div id="linksList"></div>
+</div>
 
     <script>
         function fetchUserLinks() {

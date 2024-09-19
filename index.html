@@ -4,25 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your Personalized Page Links</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Nunito Sans', sans-serif;
             margin: 0;
             padding: 20px;
-            background-color: #f0f0f0;
+            background-color: #f0f4f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
         }
         .container {
             max-width: 600px;
-            margin: 0 auto;
+            width: 100%;
             background-color: white;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            text-align: center;
         }
         h1 {
             color: #333;
-            text-align: center;
-            margin-bottom: 20px;
+            font-size: 24px;
+            margin-bottom: 25px;
         }
         .link-group {
             margin-bottom: 20px;
@@ -33,24 +39,24 @@
             align-items: center;
             margin-bottom: 10px;
             padding: 10px;
-            background-color: #f8f8f8;
-            border-radius: 5px;
+            background-color: #f9fafb;
+            border-radius: 8px;
         }
         .link-name {
-            font-weight: bold;
+            font-weight: 700;
             color: #444;
         }
         .copy-btn {
-            background-color: #4CAF50;
+            background-color: #2196F3;
             color: white;
             border: none;
-            padding: 8px 15px;
-            border-radius: 4px;
+            padding: 10px 20px;
+            border-radius: 6px;
             cursor: pointer;
             transition: background-color 0.3s;
         }
         .copy-btn:hover {
-            background-color: #45a049;
+            background-color: #1e88e5;
         }
         .divider {
             border-top: 1px solid #ddd;
@@ -60,7 +66,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>YOUR PERSONALIZED PAGE LINKS</h1>
+        <h1>Your Personalized Page Links</h1>
         <div id="linksList"></div>
     </div>
 
@@ -74,15 +80,10 @@
             }
 
             var userName = getUrlParameter('username');
-            var scriptUrl = 'https://script.google.com/macros/s/AKfycby9O7qBpwqH8jSoJlSQcVhtMlbRBo3IEYqCE36o_wpbf3pECGK1nofb18o4KVlu62TnRQ/exec'; // Ensure this is the correct, full URL
+            var scriptUrl = 'https://script.google.com/macros/s/AKfycby9O7qBpwqH8jSoJlSQcVhtMlbRBo3IEYqCE36o_wpbf3pECGK1nofb18o4KVlu62TnRQ/exec';
 
             fetch(scriptUrl + '?username=' + encodeURIComponent(userName))
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('HTTP error ' + response.status);
-                    }
-                    return response.json();
-                })
+                .then(response => response.json())
                 .then(data => processData(data))
                 .catch(error => {
                     console.error('Error fetching data:', error);
@@ -124,17 +125,17 @@
                 
                 html += '</div>';
                 linksList.innerHTML = html;
-                
+
                 document.querySelectorAll('.copy-btn').forEach(function(btn) {
                     btn.addEventListener('click', function() {
                         var link = this.getAttribute('data-link');
                         navigator.clipboard.writeText(link).then(function() {
                             var originalText = btn.textContent;
                             btn.textContent = 'Copied!';
-                            btn.style.backgroundColor = '#2196F3';
+                            btn.style.backgroundColor = '#4caf50';
                             setTimeout(function() {
                                 btn.textContent = originalText;
-                                btn.style.backgroundColor = '';
+                                btn.style.backgroundColor = '#2196F3';
                             }, 1500);
                         }, function(err) {
                             console.error('Could not copy text: ', err);

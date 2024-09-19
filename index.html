@@ -4,34 +4,45 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your Personalized Page Links</title>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Nunito Sans', sans-serif;
             margin: 0;
             padding: 20px;
-            background-color: #f0f4f8;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            background-color: #f0f0f0;
         }
         .container {
             max-width: 600px;
-            width: 100%;
+            margin: 0 auto;
             background-color: white;
-            border-radius: 12px;
-            padding: 30px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-            text-align: center;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
         h1 {
             color: #333;
-            font-size: 24px;
-            margin-bottom: 25px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        input[type="text"], button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
         }
         .link-group {
-            margin-bottom: 20px;
+            margin-top: 20px;
         }
         .link-item {
             display: flex;
@@ -39,24 +50,28 @@
             align-items: center;
             margin-bottom: 10px;
             padding: 10px;
-            background-color: #f9fafb;
-            border-radius: 8px;
+            background-color: #f8f8f8;
+            border-radius: 5px;
         }
         .link-name {
-            font-weight: 700;
+            font-weight: bold;
             color: #444;
         }
         .copy-btn {
-            background-color: #2196F3;
+            background-color: #007bff;
             color: white;
             border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
+            padding: 8px 15px;
+            border-radius: 4px;
             cursor: pointer;
             transition: background-color 0.3s;
         }
         .copy-btn:hover {
-            background-color: #1e88e5;
+            background-color: #0056b3;
+        }
+        .error-message {
+            color: red;
+            text-align: center;
         }
         .divider {
             border-top: 1px solid #ddd;
@@ -67,84 +82,90 @@
 <body>
     <div class="container">
         <h1>Your Personalized Page Links</h1>
+        <div id="errorMessage" class="error-message"></div>
+        <div id="inputSection">
+            <input type="text" id="usernameInput" placeholder="Enter your username" />
+            <button onclick="fetchUserLinks()">Get My Links</button>
+        </div>
         <div id="linksList"></div>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            function getUrlParameter(name) {
-                name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
-                var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
-                var results = regex.exec(location.search);
-                return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+        function fetchUserLinks() {
+            const username = document.getElementById('usernameInput').value.trim();
+            if (!username) {
+                document.getElementById('errorMessage').textContent = 'Please enter a valid username';
+                return;
             }
 
-            var userName = getUrlParameter('username');
-            var scriptUrl = 'https://script.google.com/macros/s/AKfycby9O7qBpwqH8jSoJlSQcVhtMlbRBo3IEYqCE36o_wpbf3pECGK1nofb18o4KVlu62TnRQ/exec';
+            const scriptUrl = 'https://script.google.com/macros/s/AKfycbxAP8IqGHAzucOJNJMa4s-BlKxosGRr_9-VZgVRfsJrlJq8BY5Fu7HFcC7P8rrYGlH3mA/exec'; // Replace with your Google Apps Script URL
 
-            fetch(scriptUrl + '?username=' + encodeURIComponent(userName))
+            fetch(scriptUrl + '?username=' + encodeURIComponent(username))
                 .then(response => response.json())
-                .then(data => processData(data))
+                .then(data => {
+                    if (data.error) {
+                        document.getElementById('errorMessage').textContent = data.error;
+                        document.getElementById('linksList').innerHTML = '';
+                    } else {
+                        document.getElementById('errorMessage').textContent = '';
+                        displayLinks(data);
+                    }
+                })
                 .catch(error => {
-                    console.error('Error fetching data:', error);
-                    document.getElementById('linksList').innerHTML = '<p>Error fetching your links. Please try again later.</p>';
+                    document.getElementById('errorMessage').textContent = 'Error fetching your links. Please try again later.';
+                    console.error('Error:', error);
                 });
+        }
 
-            function processData(data) {
-                if (!Array.isArray(data) || data.length !== 2) {
-                    document.getElementById('linksList').innerHTML = '<p>Error: Invalid data format received.</p>';
-                    return;
+        function displayLinks(data) {
+            const linksList = document.getElementById('linksList');
+            const headers = data[0];
+            const userRow = data[1];
+            
+            let html = '<div class="link-group">';
+
+            const allLinks = [
+                {sheet: 'General Optin', display: 'GENERAL OPTIN'},
+                {sheet: 'Driver Optin', display: 'DRIVER OPTIN'},
+                {sheet: 'Rider Optin', display: 'RIDER OPTIN'},
+                {sheet: 'Rep Optin', display: 'REPS OPTIN'},
+                {sheet: 'General', display: 'GENERAL INFO PAGE'},
+                {sheet: 'Driver', display: 'DRIVER INFO PAGE'},
+                {sheet: 'Rider', display: 'RIDER INFO PAGE'},
+                {sheet: 'Rep', display: 'REPS INFO PAGE'}
+            ];
+
+            allLinks.forEach(function(link, index) {
+                const columnIndex = headers.indexOf(link.sheet);
+                if (columnIndex !== -1 && userRow[columnIndex]) {
+                    html += '<div class="link-item"><span class="link-name">' + link.display + '</span><button class="copy-btn" data-link="' + userRow[columnIndex] + '">Click To Copy</button></div>';
                 }
+                if (index === 3) {
+                    html += '</div><div class="divider"></div><div class="link-group">';
+                }
+            });
 
-                var headers = data[0];
-                var userRow = data[1];
+            html += '</div>';
+            linksList.innerHTML = html;
 
-                var linksList = document.getElementById('linksList');
-                var html = '<div class="link-group">';
-                
-                var allLinks = [
-                    {sheet: 'General Optin', display: 'GENERAL OPTIN'},
-                    {sheet: 'Driver Optin', display: 'DRIVER OPTIN'},
-                    {sheet: 'Rider Optin', display: 'RIDER OPTIN'},
-                    {sheet: 'Rep Optin', display: 'REPS OPTIN'},
-                    {sheet: 'General', display: 'GENERAL INFO PAGE'},
-                    {sheet: 'Driver', display: 'DRIVER INFO PAGE'},
-                    {sheet: 'Rider', display: 'RIDER INFO PAGE'},
-                    {sheet: 'Rep', display: 'REPS INFO PAGE'}
-                ];
-                
-                allLinks.forEach(function(link, index) {
-                    var columnIndex = headers.indexOf(link.sheet);
-                    if (columnIndex !== -1 && userRow[columnIndex]) {
-                        html += '<div class="link-item"><span class="link-name">' + link.display + '</span><button class="copy-btn" data-link="' + userRow[columnIndex] + '">Click To Copy</button></div>';
-                    }
-                    if (index === 3) {
-                        html += '</div><div class="divider"></div><div class="link-group">';
-                    }
-                });
-                
-                html += '</div>';
-                linksList.innerHTML = html;
-
-                document.querySelectorAll('.copy-btn').forEach(function(btn) {
-                    btn.addEventListener('click', function() {
-                        var link = this.getAttribute('data-link');
-                        navigator.clipboard.writeText(link).then(function() {
-                            var originalText = btn.textContent;
-                            btn.textContent = 'Copied!';
-                            btn.style.backgroundColor = '#4caf50';
-                            setTimeout(function() {
-                                btn.textContent = originalText;
-                                btn.style.backgroundColor = '#2196F3';
-                            }, 1500);
-                        }, function(err) {
-                            console.error('Could not copy text: ', err);
-                            alert('Failed to copy link. Please try again.');
-                        });
+            document.querySelectorAll('.copy-btn').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    const link = this.getAttribute('data-link');
+                    navigator.clipboard.writeText(link).then(function() {
+                        const originalText = btn.textContent;
+                        btn.textContent = 'Copied!';
+                        btn.style.backgroundColor = '#2196F3';
+                        setTimeout(function() {
+                            btn.textContent = originalText;
+                            btn.style.backgroundColor = '';
+                        }, 1500);
+                    }, function(err) {
+                        console.error('Could not copy text: ', err);
+                        alert('Failed to copy link. Please try again.');
                     });
                 });
-            }
-        });
+            });
+        }
     </script>
 </body>
 </html>

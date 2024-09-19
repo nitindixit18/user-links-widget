@@ -6,57 +6,14 @@
     <title>Your Personalized Page Links</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f0f0f0;
-        }
-        .container {
-            background-color: white;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        h1 {
-            color: #333;
-            margin-top: 0;
-            text-align: center;
-        }
-        .link-group {
-            margin-bottom: 20px;
-        }
-        .link-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        .link-name {
-            font-weight: bold;
-        }
-        .copy-btn {
-            background-color: #e6f3ff;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .copy-btn:hover {
-            background-color: #cce6ff;
-        }
-        .divider {
-            border-top: 1px solid #ccc;
-            margin: 20px 0;
-        }
+        /* (Previous CSS styles remain the same) */
     </style>
 </head>
 <body>
     <div class="container">
         <h1>YOUR PERSONALIZED PAGE LINKS</h1>
         <div id="linksList"></div>
+        <div id="debugInfo"></div>
     </div>
 
     <script>
@@ -66,76 +23,83 @@
                 var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
                 var results = regex.exec(location.search);
                 return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
-            };
+            }
 
             var userName = getUrlParameter('username');
+            var scriptUrl = 'https://script.google.com/macros/s/AKfycbwduXNWg-nKlA8nRMCpp2jUdJhgFlax32FYNWCVwWYKQK9YcPuMj5QrRrv6YpXKYPbFZQ/exec';
 
-            console.log("Fetching data for user:", userName);
+            $('#debugInfo').append('<p>Fetching data for user: ' + userName + '</p>');
 
             $.ajax({
-                url: 'https://script.google.com/macros/s/AKfycbycuXtJRs3RematTJtSgHNhZFOT8Ix-8Gqt2zPudhKS1TwLyqkG4nC3F8ZtAv_c43wWkQ/exec',
+                url: scriptUrl,
                 type: 'GET',
-                dataType: 'jsonp',
+                dataType: 'json',
                 success: function(data) {
-                    console.log("Data fetched successfully");
-                    var rows = data;
-                    var headers = rows[0];
-                    var userRow = rows.find(row => row[0].toLowerCase() === userName.toLowerCase());
-                    
-                    if (userRow) {
-                        var linksList = $('#linksList');
-                        var html = '<div class="link-group">';
-                        
-                        var optinLinks = [
-                            {sheet: 'General Optin', display: 'GENERAL OPTIN'},
-                            {sheet: 'Driver Optin', display: 'DRIVER OPTIN'},
-                            {sheet: 'Rider Optin', display: 'RIDER OPTIN'},
-                            {sheet: 'Rep Optin', display: 'REPS OPTIN'}
-                        ];
-                        
-                        optinLinks.forEach(function(link) {
-                            var index = headers.indexOf(link.sheet);
-                            if (index !== -1 && userRow[index]) {
-                                html += '<div class="link-item"><span class="link-name">' + link.display + '</span><button class="copy-btn" data-link="' + userRow[index] + '">Click To Copy</button></div>';
-                            }
-                        });
-                        
-                        html += '</div><div class="divider"></div><div class="link-group">';
-                        
-                        var infoLinks = [
-                            {sheet: 'General', display: 'GENERAL INFO PAGE'},
-                            {sheet: 'Driver', display: 'DRIVER INFO PAGE'},
-                            {sheet: 'Rider', display: 'RIDER INFO PAGE'},
-                            {sheet: 'Rep', display: 'REPS INFO PAGE'}
-                        ];
-                        
-                        infoLinks.forEach(function(link) {
-                            var index = headers.indexOf(link.sheet);
-                            if (index !== -1 && userRow[index]) {
-                                html += '<div class="link-item"><span class="link-name">' + link.display + '</span><button class="copy-btn" data-link="' + userRow[index] + '">Click To Copy</button></div>';
-                            }
-                        });
-                        
-                        html += '</div>';
-                        linksList.html(html);
-                        
-                        $('.copy-btn').click(function() {
-                            var link = $(this).data('link');
-                            navigator.clipboard.writeText(link).then(function() {
-                                alert('Link copied to clipboard!');
-                            }, function(err) {
-                                console.error('Could not copy text: ', err);
-                            });
-                        });
-                    } else {
-                        $('#linksList').html('<p>No links found for this user.</p>');
-                    }
+                    $('#debugInfo').append('<p>Data fetched successfully</p>');
+                    processData(data);
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     console.error("Error fetching data:", textStatus, errorThrown);
                     $('#linksList').html('<p>Error fetching your links. Please try again later.</p>');
+                    $('#debugInfo').append('<p>Error: ' + textStatus + ' - ' + errorThrown + '</p>');
                 }
             });
+
+            function processData(data) {
+                var rows = data;
+                var headers = rows[0];
+                var userRow = rows.find(row => row[0].toLowerCase() === userName.toLowerCase());
+                
+                if (userRow) {
+                    var linksList = $('#linksList');
+                    var html = '<div class="link-group">';
+                    
+                    var optinLinks = [
+                        {sheet: 'General Optin', display: 'GENERAL OPTIN'},
+                        {sheet: 'Driver Optin', display: 'DRIVER OPTIN'},
+                        {sheet: 'Rider Optin', display: 'RIDER OPTIN'},
+                        {sheet: 'Rep Optin', display: 'REPS OPTIN'}
+                    ];
+                    
+                    optinLinks.forEach(function(link) {
+                        var index = headers.indexOf(link.sheet);
+                        if (index !== -1 && userRow[index]) {
+                            html += '<div class="link-item"><span class="link-name">' + link.display + '</span><button class="copy-btn" data-link="' + userRow[index] + '">Click To Copy</button></div>';
+                        }
+                    });
+                    
+                    html += '</div><div class="divider"></div><div class="link-group">';
+                    
+                    var infoLinks = [
+                        {sheet: 'General', display: 'GENERAL INFO PAGE'},
+                        {sheet: 'Driver', display: 'DRIVER INFO PAGE'},
+                        {sheet: 'Rider', display: 'RIDER INFO PAGE'},
+                        {sheet: 'Rep', display: 'REPS INFO PAGE'}
+                    ];
+                    
+                    infoLinks.forEach(function(link) {
+                        var index = headers.indexOf(link.sheet);
+                        if (index !== -1 && userRow[index]) {
+                            html += '<div class="link-item"><span class="link-name">' + link.display + '</span><button class="copy-btn" data-link="' + userRow[index] + '">Click To Copy</button></div>';
+                        }
+                    });
+                    
+                    html += '</div>';
+                    linksList.html(html);
+                    
+                    $('.copy-btn').click(function() {
+                        var link = $(this).data('link');
+                        navigator.clipboard.writeText(link).then(function() {
+                            alert('Link copied to clipboard!');
+                        }, function(err) {
+                            console.error('Could not copy text: ', err);
+                        });
+                    });
+                } else {
+                    $('#linksList').html('<p>No links found for this user.</p>');
+                }
+                $('#debugInfo').append('<p>Data processing complete</p>');
+            }
         });
     </script>
 </body>

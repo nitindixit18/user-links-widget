@@ -84,8 +84,9 @@
         <h1>Your Personalized Page Links</h1>
         <div id="errorMessage" class="error-message"></div>
         <div id="inputSection">
-            <input type="text" id="usernameInput" placeholder="Enter your username" />
-            <button onclick="fetchUserLinks()">Get My Links</button>
+        <label for="query">Enter your full name or Referral ID:</label>
+        <input type="text" id="query" name="query" placeholder="Full Name or Referral ID">
+        <button id="get-links" onclick="fetchLinks()">Get My Links</button>
         </div>
         <div id="linksList"></div>
     </div>
